@@ -16,4 +16,4 @@ spec:
         name: cnpg
   values:
     monitoring:
-      podMonitorEnabled: true
+      podMonitorEnabled: false
