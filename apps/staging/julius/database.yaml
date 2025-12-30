@@ -18,6 +18,5 @@ spec:
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io
-      isWALArchiver: true
       parameters:
         barmanObjectName: julius-objectstore
