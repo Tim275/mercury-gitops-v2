@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cicero-ingress
+  namespace: cicero
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - cicero.staging.mercury.local
+      secretName: cicero-tls
+  rules:
+    - host: cicero.staging.mercury.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cicero-n8n
+                port:
+                  number: 3008

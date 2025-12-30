@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: julius-db-backup
+  namespace: julius
+spec:
+  schedule: "0 0 3 * * *"
+  backupOwnerReference: cluster
+  cluster:
+    name: julius-db

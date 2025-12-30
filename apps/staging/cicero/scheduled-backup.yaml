@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: cicero-db-backup
+  namespace: cicero
+spec:
+  schedule: "0 0 3 * * *"
+  backupOwnerReference: cluster
+  cluster:
+    name: cicero-db

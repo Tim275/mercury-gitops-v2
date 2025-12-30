@@ -1,0 +1,16 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: cicero-objectstore
+  namespace: cicero
+spec:
+  configuration:
+    destinationPath: "https://stbackupsstagingtpc9e0re.blob.core.windows.net/cicero"
+    azureCredentials:
+      storageAccount:
+        name: cicero-backup-creds
+        key: storage-account-name
+      storageSasToken:
+        name: cicero-backup-creds
+        key: cicero-blob-sas
+  retentionPolicy: "14d"
