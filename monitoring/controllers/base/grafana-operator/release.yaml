@@ -2,9 +2,11 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: grafana-operator
-  namespace: monitoring
+  namespace: flux-system
 spec:
   interval: 1h
+  releaseName: grafana-operator
+  targetNamespace: monitoring
   chart:
     spec:
       chart: grafana-operator
@@ -12,7 +14,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: grafana-operator
-        namespace: flux-system
   dependsOn:
     - name: kube-prometheus-stack
-      namespace: monitoring
+      namespace: flux-system

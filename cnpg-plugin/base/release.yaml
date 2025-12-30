@@ -2,9 +2,11 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cnpg-plugin-barman-cloud
-  namespace: cnpg-system
+  namespace: flux-system
 spec:
   interval: 1h
+  releaseName: cnpg-plugin-barman-cloud
+  targetNamespace: cnpg-system
   chart:
     spec:
       chart: plugin-barman-cloud
@@ -12,7 +14,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: cnpg
-        namespace: flux-system
   dependsOn:
     - name: cloudnative-pg
-      namespace: cnpg-system
+      namespace: flux-system
