@@ -22,12 +22,12 @@ spec:
                 - name: GF_SECURITY_ADMIN_USER
                   valueFrom:
                     secretKeyRef:
-                      name: grafana-admin-credentials
+                      name: grafana-keyvault-creds
                       key: admin-user
                 - name: GF_SECURITY_ADMIN_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: grafana-admin-credentials
+                      name: grafana-keyvault-creds
                       key: admin-password
               resources:
                 requests:
