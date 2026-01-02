@@ -11,18 +11,38 @@ spec:
       mode: "console"
     auth:
       disable_login_form: "false"
-    security:
-      admin_user: admin
-      admin_password: admin  # In Production via Secret ersetzen
+    # Security: Credentials via KeyVault (env vars unten)
   deployment:
     spec:
       template:
         spec:
           containers:
             - name: grafana
+              env:
+                - name: GF_SECURITY_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-admin-credentials
+                      key: admin-user
+                - name: GF_SECURITY_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-admin-credentials
+                      key: admin-password
               resources:
                 requests:
                   memory: 256Mi
                   cpu: 100m
                 limits:
                   memory: 512Mi
+              volumeMounts:
+                - name: secrets-store
+                  mountPath: /mnt/secrets-store
+                  readOnly: true
+          volumes:
+            - name: secrets-store
+              csi:
+                driver: secrets-store.csi.k8s.io
+                readOnly: true
+                volumeAttributes:
+                  secretProviderClass: grafana-secrets
