@@ -3,20 +3,32 @@ kind: Deployment
 metadata:
   name: cicero-n8n
   namespace: cicero
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/instance: cicero
+    app.kubernetes.io/component: n8n
+    app.kubernetes.io/part-of: cicero
+    app.kubernetes.io/managed-by: terraform
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: cicero-n8n
+      app.kubernetes.io/component: n8n
   strategy:
     type: Recreate
+  
 
   template:
     metadata:
       labels:
         app: cicero-n8n
+        app.kubernetes.io/name: n8n
+        app.kubernetes.io/instance: cicero
+        app.kubernetes.io/component: n8n
 
     spec:
+      serviceAccountName: n8n-workload
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -25,9 +37,12 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
+      
+
       containers:
         - name: n8n
-          image: docker.n8n.io/n8nio/n8n:latest
+          image: docker.n8n.io/n8nio/n8n:1.68.0
+          imagePullPolicy: IfNotPresent
 
           securityContext:
             allowPrivilegeEscalation: false
@@ -50,6 +65,7 @@ spec:
               port: 3008
             initialDelaySeconds: 30
             periodSeconds: 10
+            failureThreshold: 3
 
           readinessProbe:
             httpGet:
@@ -57,6 +73,7 @@ spec:
               port: 3008
             initialDelaySeconds: 5
             periodSeconds: 5
+            failureThreshold: 3
 
           envFrom:
             - configMapRef:
