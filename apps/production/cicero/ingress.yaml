@@ -1,0 +1,35 @@
+# =============================================================================
+# Ingress für cicero
+# =============================================================================
+# HINWEIS: Diese Datei wird nur aktiviert wenn enable_ingress = true
+#
+# Voraussetzungen:
+# 1. Domain gekauft und DNS Zone in Azure erstellt
+# 2. Wildcard DNS Record auf Traefik LoadBalancer IP
+# 3. enable_ingress = true in customers.tf
+# 4. terraform apply
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cicero-ingress
+  namespace: cicero
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - cicero.production.mercury.local
+      secretName: cicero-tls
+  rules:
+    - host: cicero.production.mercury.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cicero-n8n
+                port:
+                  number: 3008

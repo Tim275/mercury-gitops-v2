@@ -1,0 +1,22 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cicero-db
+  namespace: cicero
+spec:
+  instances: 2
+
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+      secret:
+        name: cicero-db-credentials
+
+  storage:
+    size: 5Gi
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      parameters:
+        barmanObjectName: cicero-objectstore

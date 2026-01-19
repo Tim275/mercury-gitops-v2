@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: cicero
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - configmap.yaml
+  - storage.yaml
+  - database.yaml
+  - objectstore.yaml
+  - scheduled-backup.yaml
+  - deployment.yaml
+  - service.yaml
+  # - ingress.yaml  # Aktivieren wenn Domain + DNS konfiguriert (enable_ingress = true)
