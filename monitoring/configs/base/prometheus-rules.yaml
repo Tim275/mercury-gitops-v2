@@ -1,0 +1,208 @@
+# =============================================================================
+# Prometheus Alerting Rules - Enterprise Monitoring
+# =============================================================================
+# Critical alerts for production operations
+# =============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: enterprise-alerts
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  groups:
+    # =========================================================================
+    # Kubernetes Pod Alerts
+    # =========================================================================
+    - name: kubernetes.pods
+      interval: 30s
+      rules:
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total[15m]) > 0.1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+            description: "Pod has restarted more than 6 times in the last 15 minutes"
+
+        - alert: PodNotReady
+          expr: kube_pod_status_ready{condition="true"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} not ready"
+            description: "Pod has been in non-ready state for more than 10 minutes"
+
+        - alert: ContainerOOMKilled
+          expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container OOM killed in {{ $labels.namespace }}/{{ $labels.pod }}"
+            description: "Container was killed due to out of memory"
+
+    # =========================================================================
+    # Node Alerts
+    # =========================================================================
+    - name: kubernetes.nodes
+      interval: 30s
+      rules:
+        - alert: NodeHighCPU
+          expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage on {{ $labels.instance }}"
+            description: "CPU usage is above 80% for more than 10 minutes"
+
+        - alert: NodeHighMemory
+          expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage on {{ $labels.instance }}"
+            description: "Memory usage is above 85% for more than 10 minutes"
+
+        - alert: NodeDiskPressure
+          expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Disk pressure on node {{ $labels.node }}"
+            description: "Node is experiencing disk pressure"
+
+        - alert: NodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} not ready"
+            description: "Node has been in non-ready state for more than 5 minutes"
+
+    # =========================================================================
+    # CNPG Database Alerts
+    # =========================================================================
+    - name: cnpg.database
+      interval: 30s
+      rules:
+        - alert: PostgreSQLDown
+          expr: cnpg_collector_up == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PostgreSQL cluster {{ $labels.cluster }} is down"
+            description: "PostgreSQL cluster has been unreachable for more than 1 minute"
+
+        - alert: PostgreSQLReplicationLag
+          expr: cnpg_pg_replication_lag > 30
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PostgreSQL replication lag on {{ $labels.cluster }}"
+            description: "Replication lag is above 30 seconds"
+
+        - alert: PostgreSQLHighConnections
+          expr: cnpg_backends_total / cnpg_pg_settings_max_connections > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High connection usage on {{ $labels.cluster }}"
+            description: "Connection usage is above 80%"
+
+        - alert: PostgreSQLBackupFailed
+          expr: time() - cnpg_pg_last_archived_wal_timestamp > 3600
+          for: 30m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PostgreSQL WAL archiving failed on {{ $labels.cluster }}"
+            description: "No WAL archived in the last hour"
+
+    # =========================================================================
+    # Application Alerts (n8n)
+    # =========================================================================
+    - name: application.n8n
+      interval: 30s
+      rules:
+        - alert: N8NHighErrorRate
+          expr: |
+            rate(http_request_duration_seconds_count{job=~".*n8n.*", code=~"5.."}[5m])
+            / rate(http_request_duration_seconds_count{job=~".*n8n.*"}[5m]) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High error rate in n8n"
+            description: "Error rate is above 5% for the last 5 minutes"
+
+        - alert: N8NHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=~".*n8n.*"}[5m])) > 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High latency in n8n"
+            description: "95th percentile latency is above 2 seconds"
+
+    # =========================================================================
+    # Certificate Alerts
+    # =========================================================================
+    - name: certificates
+      interval: 1h
+      rules:
+        - alert: CertificateExpiringSoon
+          expr: certmanager_certificate_expiration_timestamp_seconds - time() < 604800
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.name }} expiring soon"
+            description: "Certificate will expire in less than 7 days"
+
+        - alert: CertificateExpired
+          expr: certmanager_certificate_expiration_timestamp_seconds - time() < 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Certificate {{ $labels.name }} has expired"
+            description: "Certificate has expired and needs immediate renewal"
+
+    # =========================================================================
+    # Storage Alerts
+    # =========================================================================
+    - name: storage
+      interval: 1m
+      rules:
+        - alert: PVCAlmostFull
+          expr: |
+            (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} almost full"
+            description: "PVC is more than 85% full"
+
+        - alert: PVCFull
+          expr: |
+            (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > 0.95
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} is full"
+            description: "PVC is more than 95% full, immediate action required"

@@ -1,0 +1,15 @@
+# =============================================================================
+# Apps Base Kustomization
+# =============================================================================
+# Shared resources applied to ALL customer namespaces
+# Customer-specific overlays reference this base
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Enterprise security policies applied to all customers
+resources:
+  - network-policy.yaml
+  - rbac.yaml
+  - resource-quota.yaml
+  - pdb.yaml

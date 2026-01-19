@@ -1,0 +1,68 @@
+# =============================================================================
+# Resource Quota - Prevent Noisy Neighbor Problem
+# =============================================================================
+# Enterprise: Each customer namespace has resource limits
+# Prevents one customer from consuming all cluster resources
+# =============================================================================
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: namespace-quota
+spec:
+  hard:
+    # CPU limits
+    requests.cpu: "2"
+    limits.cpu: "4"
+    # Memory limits
+    requests.memory: "4Gi"
+    limits.memory: "8Gi"
+    # Pod count limit
+    pods: "20"
+    # PVC limits
+    persistentvolumeclaims: "10"
+    requests.storage: "50Gi"
+    # Service limits
+    services: "10"
+    services.loadbalancers: "2"
+    services.nodeports: "0"  # No NodePorts allowed
+    # Secret/ConfigMap limits
+    secrets: "20"
+    configmaps: "20"
+---
+# =============================================================================
+# Limit Range - Default Resource Requests/Limits
+# =============================================================================
+# If a pod doesn't specify resources, these defaults apply
+# Prevents pods from running without resource constraints
+# =============================================================================
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: namespace-limits
+spec:
+  limits:
+    # Default for containers
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+      max:
+        cpu: "2"
+        memory: "4Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+    # Default for pods
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: "8Gi"
+    # PVC limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "20Gi"
+      min:
+        storage: "1Gi"

@@ -1,0 +1,63 @@
+# =============================================================================
+# RBAC Configuration - Enterprise Security
+# =============================================================================
+# Each customer namespace gets dedicated ServiceAccount with minimal permissions
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: n8n-workload
+  labels:
+    app.kubernetes.io/component: n8n
+---
+# =============================================================================
+# Role: n8n Workload Permissions
+# =============================================================================
+# Minimal permissions for n8n to function
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: n8n-workload-role
+rules:
+  # Allow reading ConfigMaps (for configuration)
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  # Allow reading Secrets (mounted via CSI, but needs read for env)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+    resourceNames:
+      - n8n-env
+      - db-credentials
+  # No other permissions - principle of least privilege
+---
+# =============================================================================
+# RoleBinding: Bind ServiceAccount to Role
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: n8n-workload-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: n8n-workload-role
+subjects:
+  - kind: ServiceAccount
+    name: n8n-workload
+---
+# =============================================================================
+# Role: Database Read-Only (for debugging)
+# =============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: db-readonly-role
+rules:
+  - apiGroups: ["postgresql.cnpg.io"]
+    resources: ["clusters"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list"]

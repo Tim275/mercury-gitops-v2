@@ -1,0 +1,30 @@
+# =============================================================================
+# Pod Disruption Budget - High Availability
+# =============================================================================
+# Enterprise: Prevents all pods from being evicted simultaneously
+# Ensures minimum availability during node maintenance/upgrades
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: n8n-pdb
+spec:
+  # At least 1 pod must always be available
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: n8n
+---
+# =============================================================================
+# Database PDB - Ensure HA during maintenance
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: database-pdb
+spec:
+  # For 2+ replica setup, at least 1 must be available
+  minAvailable: 1
+  selector:
+    matchLabels:
+      cnpg.io/cluster: db

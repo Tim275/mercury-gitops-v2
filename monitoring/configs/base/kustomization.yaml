@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - grafana-instance.yaml
   - grafana-datasource.yaml
+  - prometheus-rules.yaml
