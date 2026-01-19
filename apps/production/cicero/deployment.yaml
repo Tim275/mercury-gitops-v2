@@ -3,20 +3,34 @@ kind: Deployment
 metadata:
   name: cicero-n8n
   namespace: cicero
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/instance: cicero
+    app.kubernetes.io/component: n8n
+    app.kubernetes.io/part-of: cicero
+    app.kubernetes.io/managed-by: terraform
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: cicero-n8n
+      app.kubernetes.io/component: n8n
   strategy:
-    type: Recreate
+    type: RollingUpdate
+  
+  minReadySeconds: 10
+  
 
   template:
     metadata:
       labels:
         app: cicero-n8n
+        app.kubernetes.io/name: n8n
+        app.kubernetes.io/instance: cicero
+        app.kubernetes.io/component: n8n
 
     spec:
+      serviceAccountName: n8n-workload
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -25,9 +39,23 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
+      
+      # Enterprise: Pod anti-affinity for HA (spread across nodes)
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: cicero-n8n
+                topologyKey: kubernetes.io/hostname
+      
+
       containers:
         - name: n8n
-          image: docker.n8n.io/n8nio/n8n:latest
+          image: docker.n8n.io/n8nio/n8n:1.68.0
+          imagePullPolicy: IfNotPresent
 
           securityContext:
             allowPrivilegeEscalation: false
@@ -38,11 +66,11 @@ spec:
 
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
-            limits:
               memory: "512Mi"
-              cpu: "500m"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
 
           livenessProbe:
             httpGet:
@@ -50,6 +78,7 @@ spec:
               port: 3008
             initialDelaySeconds: 30
             periodSeconds: 10
+            failureThreshold: 3
 
           readinessProbe:
             httpGet:
@@ -57,6 +86,7 @@ spec:
               port: 3008
             initialDelaySeconds: 5
             periodSeconds: 5
+            failureThreshold: 3
 
           envFrom:
             - configMapRef:
