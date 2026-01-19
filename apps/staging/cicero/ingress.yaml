@@ -1,3 +1,14 @@
+# =============================================================================
+# Ingress für cicero
+# =============================================================================
+# HINWEIS: Diese Datei wird nur aktiviert wenn enable_ingress = true
+#
+# Voraussetzungen:
+# 1. Domain gekauft und DNS Zone in Azure erstellt
+# 2. Wildcard DNS Record auf Traefik LoadBalancer IP
+# 3. enable_ingress = true in customers.tf
+# 4. terraform apply
+# =============================================================================
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

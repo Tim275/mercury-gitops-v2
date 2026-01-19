@@ -11,4 +11,4 @@ resources:
   - scheduled-backup.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
+  # - ingress.yaml  # Aktivieren wenn Domain + DNS konfiguriert (enable_ingress = true)
