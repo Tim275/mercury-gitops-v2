@@ -5,7 +5,7 @@ metadata:
   namespace: cicero
 spec:
   configuration:
-    destinationPath: "https://stbackupsstaging7qhkbzij.blob.core.windows.net/cicero"
+    destinationPath: "https://stbackupsstagingwe26tl38.blob.core.windows.net/cicero"
     azureCredentials:
       storageAccount:
         name: cicero-backup-creds
