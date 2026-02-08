@@ -2653,10 +2653,10 @@
     {
       "id": "arr-scrape",
       "type": "arrow",
-      "x": 890,
-      "y": 422,
-      "width": 0,
-      "height": 40,
+      "x": 918,
+      "y": 407,
+      "width": 30,
+      "height": 80,
       "strokeColor": "#862e9c",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
@@ -2670,8 +2670,16 @@
           0
         ],
         [
-          0,
-          40
+          18,
+          0
+        ],
+        [
+          18,
+          80
+        ],
+        [
+          -3,
+          80
         ]
       ],
       "seed": 187,
@@ -2683,8 +2691,8 @@
       "link": null,
       "locked": false,
       "lastCommittedPoint": [
-        0,
-        40
+        -3,
+        80
       ],
       "startBinding": null,
       "endBinding": null,
@@ -2695,11 +2703,11 @@
     {
       "id": "scrape-lbl",
       "type": "text",
-      "x": 895,
-      "y": 432,
-      "width": 26.400000000000002,
-      "height": 11.2,
-      "text": "scrape",
+      "x": 940,
+      "y": 442,
+      "width": 30.800000000000004,
+      "height": 22.4,
+      "text": "metrics\nscrape",
       "fontSize": 8,
       "fontFamily": 3,
       "textAlign": "left",
