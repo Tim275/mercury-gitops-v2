@@ -10,14 +10,3 @@ Kubernetes manifests for multi-tenant AKS, managed by FluxCD. This repository se
   </a>
 </p>
 
-## Stack
-
-| Component | Tool | Purpose |
-|-----------|------|---------|
-| GitOps | FluxCD | Automated sync every 60s |
-| Ingress | Gateway API (Traefik) | Traffic routing + TLS termination |
-| TLS | Cert-Manager + Let's Encrypt | Automatic certificate provisioning |
-| Database | CNPG + Barman Cloud | PostgreSQL HA with automated backups |
-| Monitoring | Prometheus + Grafana | Metrics, dashboards, Telegram alerts |
-| Secrets | Azure Key Vault CSI Driver | Zero secrets in Git |
-| Network | Cilium CNI + Network Policies | Tenant isolation |
